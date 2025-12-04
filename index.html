@@ -1,156 +1,160 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aniversário do Samuel</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mensagens — Criado por Samuel</title>
 
 <style>
     body {
-        background: #001900;
-        color: #00ff00;
-        font-family: "Courier New", monospace;
-        text-align: center;
-        padding: 40px;
+        background-color: #000;
+        color: #0f0;
+        font-family: "Consolas", monospace;
+        padding: 20px;
     }
 
     h1 {
-        font-size: 28px;
+        text-align: center;
+        color: #0f0;
     }
 
-    button {
-        padding: 15px 25px;
-        font-size: 16px;
-        margin: 15px;
-        border: none;
-        background: #00ff00;
-        color: #000;
-        cursor: pointer;
-        font-weight: bold;
+    .card {
+        border: 2px solid #0f0;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+
+    input, textarea, button {
+        width: 100%;
+        margin-top: 10px;
+        background: black;
+        border: 1px solid #0f0;
+        padding: 10px;
+        color: #0f0;
+        font-family: Consolas;
     }
 
     button:hover {
-        background: #00cc00;
+        cursor: pointer;
+        opacity: 0.8;
     }
 
-    /* Terminal oculto */
-    #terminal-box {
-        display: none;
-        margin-top: 40px;
-        background: #000;
-        border: 1px solid #00ff00;
-        padding: 20px;
-        text-align: left;
-    }
-
+    /* TERMINAL */
     #terminal {
-        white-space: pre-line;
-        height: 300px;
+        display: none;
+        margin-top: 30px;
+        border: 2px solid #0f0;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    #terminal-output {
+        height: 200px;
         overflow-y: auto;
+        background: #001100;
+        padding: 10px;
         margin-bottom: 10px;
     }
-
-    #cmd {
-        width: 100%;
-        background: #001900;
-        color: #00ff00;
-        border: 1px solid #00ff00;
-        padding: 10px;
-        font-family: inherit;
-    }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<h1>🎉 Mensagens para o Samuel 🎉</h1>
-<p>Clique abaixo para deixar uma mensagem para o aniversário dele!</p>
+<h1>Mensagens Secretas — Samuel</h1>
 
-<!-- BOTÃO PARA A PÁGINA DE ENVIAR -->
-<button onclick="window.location.href='enviar.html'">
-    Enviar mensagem
-</button>
-
-<!-- BOTÃO PARA ABRIR TERMINAL SECRETO -->
-<button onclick="toggleTerminal()">
-    Modo Terminal (secreto)
-</button>
-
-<!-- TERMINAL SECRETO -->
-<div id="terminal-box">
-    <h2>Terminal de Acesso</h2>
-    <div id="terminal"></div>
-    <input id="cmd" placeholder="Digite um comando e aperte Enter">
+<div class="card">
+    <h2>Enviar Mensagem</h2>
+    <input id="sender" placeholder="Seu nome">
+    <textarea id="message" placeholder="Sua mensagem" rows="4"></textarea>
+    <button onclick="sendMessage()">Enviar</button>
+    <p id="msg-status"></p>
 </div>
 
+<!-- TERMINAL SECRETO -->
+<div id="terminal">
+    <h2>Terminal Secreto</h2>
+    <div id="terminal-output"></div>
+    <input id="terminal-input" placeholder="Digite comandos">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ------------------------ CONFIG SUPABASE ------------------------ */
-const SUPABASE_URL = "https://ptqiuuohfeytgumrmgvc.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cWl1dW9oZmV5dGd1bXJtZ3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NDg0MzYsImV4cCI6MjA4MDQyNDQzNn0.VjQdTF_4-bBtP02dR4NOSCqOU15NHtt6ttj8qE87rHE";
+const supabaseUrl = "https://ptqiuuohfeytgumrmgvc.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cWl1dW9oZmV5dGd1bXJtZ3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NDg0MzYsImV4cCI6MjA4MDQyNDQzNn0.VjQdTF_4-bBtP02dR4NOSCqOU15NHtt6ttj8qE87rHE";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-/* ------------------------ FUNÇÕES DO TERMINAL ------------------------ */
-function toggleTerminal() {
-    const box = document.getElementById("terminal-box");
-    box.style.display = box.style.display === "block" ? "none" : "block";
-}
+async function sendMessage() {
+    const sender = document.getElementById("sender").value;
+    const message = document.getElementById("message").value;
 
-const terminal = document.getElementById("terminal");
-const cmd = document.getElementById("cmd");
-
-function print(text) {
-    terminal.innerHTML += text + "\n";
-    terminal.scrollTop = terminal.scrollHeight;
-}
-
-print("Terminal carregado.");
-print("Digite s4m4e4p4a4 para liberar as mensagens.");
-print("");
-
-async function loadMessages() {
-    print("Carregando mensagens...\n");
-
-    const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .order("id", { ascending: false });
-
-    if (error) {
-        print("Erro ao carregar mensagens.");
+    if (!sender || !message) {
+        alert("Preencha tudo.");
         return;
     }
 
-    if (data.length === 0) {
-        print("Nenhuma mensagem encontrada.");
-        return;
-    }
-
-    print("=== MENSAGENS ===");
-
-    data.forEach(msg => {
-        print(`• ${msg.sender}: ${msg.content}`);
+    const { error } = await supabase.from("mensagens").insert({
+        sender: sender,
+        message: message
     });
 
-    print("=================\n");
+    if (!error) {
+        document.getElementById("msg-status").innerText = "Mensagem enviada!";
+        document.getElementById("sender").value = "";
+        document.getElementById("message").value = "";
+    } else {
+        document.getElementById("msg-status").innerText = "Erro ao enviar.";
+    }
 }
 
-cmd.addEventListener("keydown", function(e) {
+/* TERMINAL SECRETO */
+let buffer = "";
+
+document.addEventListener("keydown", (e) => {
+    buffer += e.key;
+
+    if (buffer.includes("s4m4e4p4a4")) {
+        document.getElementById("terminal").style.display = "block";
+        logTerminal("TERMINAL ATIVADO");
+        buffer = "";
+    }
+
+    if (buffer.length > 20) buffer = buffer.slice(-20);
+});
+
+document.getElementById("terminal-input").addEventListener("keydown", async (e) => {
     if (e.key === "Enter") {
-        const command = cmd.value.trim();
-        cmd.value = "";
-
-        print("> " + command);
-
-        if (command === "s4m4e4p4a4") {
-            print("Acesso autorizado.");
-            loadMessages();
-        } else {
-            print("Comando desconhecido.");
-        }
+        const cmd = e.target.value;
+        e.target.value = "";
+        await runCommand(cmd);
     }
 });
+
+function logTerminal(text) {
+    const box = document.getElementById("terminal-output");
+    box.innerHTML += text + "<br>";
+    box.scrollTop = box.scrollHeight;
+}
+
+async function runCommand(cmd) {
+    if (cmd === "help") {
+        logTerminal("Comandos: help, listar");
+    }
+
+    if (cmd === "listar") {
+        const releaseTime = new Date("2024-12-22T00:00:00");
+
+        const now = new Date();
+        if (now < releaseTime) {
+            logTerminal("⚠️ Você está vendo ANTES do tempo (modo teste).");
+        }
+
+        const { data } = await supabase.from("mensagens").select("*");
+        data.forEach(x => {
+            logTerminal(`<b>${x.sender}:</b> ${x.message}`);
+        });
+    }
+}
 </script>
 
 </body>
