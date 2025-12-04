@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Aniversário do Samuel 🎉</title>
+
+<style>
+  body {
+    background: linear-gradient(135deg, #ffe0f0, #dbe4ff);
+    font-family: 'Poppins', sans-serif;
+    padding: 40px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 40px;
+    color: #333;
+  }
+  input, textarea {
+    width: 60%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 0 10px #0002;
+    font-size: 16px;
+  }
+  button {
+    background: #ff7cc5;
+    color: white;
+    padding: 12px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    background: #ff4fb8;
+  }
+  .msg {
+    background: white;
+    width: 60%;
+    margin: 10px auto;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 10px #0002;
+    text-align: left;
+  }
+  .footer {
+    margin-top: 50px;
+    opacity: 0.7;
+  }
+</style>
+
+</head>
+<body>
+
+<h1>🎂 Deixe sua mensagem para o Samuel 🎂</h1>
+
+<form id="form">
+  <input id="name" placeholder="Seu nome 💗" required><br>
+  <textarea id="content" placeholder="Sua mensagem 🎉" required></textarea><br>
+  <button type="submit">Enviar 💌</button>
+</form>
+
+<div id="messages"></div>
+
+<div class="footer">Criado por Samuel ✨</div>
+
+<script>
+async function loadMessages() {
+  const res = await fetch('/api/getMessages');
+  const data = await res.json();
+  const box = document.getElementById('messages');
+
+  if (!data.available) {
+    box.innerHTML = "<h2>💫 As mensagens serão reveladas no dia 22/12 às 00:00 💫</h2>";
+    return;
+  }
+
+  box.innerHTML = "";
+  data.messages.forEach(m => {
+    box.innerHTML += `
+      <div class="msg">
+        <b>${m.name}</b><br>
+        ${m.content}
+      </div>
+    `;
+  });
+}
+
+document.getElementById('form').onsubmit = async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value;
+  const content = document.getElementById('content').value;
+
+  await fetch('/api/saveMessage', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name, content })
+  });
+
+  alert("Mensagem enviada! 💞");
+};
+
+loadMessages();
+</script>
+
+</body>
+</html>
