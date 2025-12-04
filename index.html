@@ -1,110 +1,147 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Aniversário do Samuel 🎉</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal de Mensagens</title>
 
 <style>
-  body {
-    background: linear-gradient(135deg, #ffe0f0, #dbe4ff);
-    font-family: 'Poppins', sans-serif;
-    padding: 40px;
-    text-align: center;
-  }
-  h1 {
-    font-size: 40px;
-    color: #333;
-  }
-  input, textarea {
-    width: 60%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: none;
-    box-shadow: 0 0 10px #0002;
-    font-size: 16px;
-  }
-  button {
-    background: #ff7cc5;
-    color: white;
-    padding: 12px 20px;
-    font-size: 18px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  button:hover {
-    background: #ff4fb8;
-  }
-  .msg {
-    background: white;
-    width: 60%;
-    margin: 10px auto;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 0 10px #0002;
-    text-align: left;
-  }
-  .footer {
-    margin-top: 50px;
-    opacity: 0.7;
-  }
+    body {
+        background-color: #001900;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        margin: 0;
+        padding: 0;
+    }
+
+    #terminal {
+        padding: 20px;
+        white-space: pre-line;
+        overflow-y: auto;
+        height: calc(100vh - 40px);
+    }
+
+    #input-area {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #00ff00;
+        background: #000;
+    }
+
+    #prompt {
+        margin-right: 5px;
+        color: #00ff00;
+    }
+
+    #cmd {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #00ff00;
+        font-family: inherit;
+        font-size: 16px;
+        outline: none;
+    }
+
+    ::selection {
+        background: #00ff00;
+        color: #000;
+    }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
 
-<h1>🎂 Deixe sua mensagem para o Samuel 🎂</h1>
+<div id="terminal"></div>
 
-<form id="form">
-  <input id="name" placeholder="Seu nome 💗" required><br>
-  <textarea id="content" placeholder="Sua mensagem 🎉" required></textarea><br>
-  <button type="submit">Enviar 💌</button>
-</form>
-
-<div id="messages"></div>
-
-<div class="footer">Criado por Samuel ✨</div>
+<div id="input-area">
+    <span id="prompt">></span>
+    <input id="cmd" autocomplete="off" autofocus>
+</div>
 
 <script>
-async function loadMessages() {
-  const res = await fetch('/api/getMessages');
-  const data = await res.json();
-  const box = document.getElementById('messages');
+/* ------------------------ CONFIG SUPABASE ------------------------ */
+const SUPABASE_URL = "https://ptqiuuohfeytgumrmgvc.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cWl1dW9oZmV5dGd1bXJtZ3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NDg0MzYsImV4cCI6MjA4MDQyNDQzNn0.VjQdTF_4-bBtP02dR4NOSCqOU15NHtt6ttj8qE87rHE";
 
-  if (!data.available) {
-    box.innerHTML = "<h2>💫 As mensagens serão reveladas no dia 22/12 às 00:00 💫</h2>";
-    return;
-  }
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  box.innerHTML = "";
-  data.messages.forEach(m => {
-    box.innerHTML += `
-      <div class="msg">
-        <b>${m.name}</b><br>
-        ${m.content}
-      </div>
-    `;
-  });
+/* ------------------------ SISTEMA DO TERMINAL ------------------------ */
+
+const terminal = document.getElementById("terminal");
+const cmdInput = document.getElementById("cmd");
+
+function print(text) {
+    terminal.innerHTML += text + "\n";
+    terminal.scrollTop = terminal.scrollHeight;
 }
 
-document.getElementById('form').onsubmit = async (e) => {
-  e.preventDefault();
+print("Sistema iniciado.");
+print("Aguardando comando...");
+print("");
 
-  const name = document.getElementById('name').value;
-  const content = document.getElementById('content').value;
+/* ------------------------ CHECAR DATA REAL ------------------------ */
+function isBirthday() {
+    const now = new Date();
+    return now.getDate() === 22 && (now.getMonth() + 1) === 12;
+}
 
-  await fetch('/api/saveMessage', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ name, content })
-  });
+/* ------------------------ PEGAR MENSAGENS ------------------------ */
+async function loadMessages() {
+    print("Carregando mensagens...\n");
 
-  alert("Mensagem enviada! 💞");
-};
+    const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .order("id", { ascending: false });
 
-loadMessages();
+    if (error) {
+        print("Erro ao carregar mensagens.");
+        return;
+    }
+
+    if (data.length === 0) {
+        print("Nenhuma mensagem encontrada.");
+        return;
+    }
+
+    print("=== MENSAGENS ===");
+
+    data.forEach(msg => {
+        print(`• ${msg.sender}: ${msg.content}`);
+    });
+
+    print("=================\n");
+}
+
+/* ------------------------ DESBLOQUEAR ------------------------ */
+function unlock() {
+    print("Acesso autorizado.");
+    loadMessages();
+}
+
+/* ------------------------ COMANDOS ------------------------ */
+cmdInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        const command = cmdInput.value.trim();
+        print("> " + command);
+        cmdInput.value = "";
+
+        if (command === "s4m4e4p4a4") {
+            unlock();
+        } else {
+            print("Comando desconhecido.");
+        }
+    }
+});
+
+/* ------------------------ DESBLOQUEIO AUTOMÁTICO ------------------------ */
+if (isBirthday()) {
+    print("Data validada: 22/12 — desbloqueando automaticamente...\n");
+    unlock();
+}
 </script>
 
 </body>
