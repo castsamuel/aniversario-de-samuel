@@ -3,62 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terminal de Mensagens</title>
+<title>Aniversário do Samuel</title>
 
 <style>
     body {
-        background-color: #001900;
+        background: #001900;
         color: #00ff00;
         font-family: "Courier New", monospace;
-        margin: 0;
-        padding: 0;
+        text-align: center;
+        padding: 40px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    button {
+        padding: 15px 25px;
+        font-size: 16px;
+        margin: 15px;
+        border: none;
+        background: #00ff00;
+        color: #000;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #00cc00;
+    }
+
+    /* Terminal oculto */
+    #terminal-box {
+        display: none;
+        margin-top: 40px;
+        background: #000;
+        border: 1px solid #00ff00;
+        padding: 20px;
+        text-align: left;
     }
 
     #terminal {
-        padding: 20px;
         white-space: pre-line;
+        height: 300px;
         overflow-y: auto;
-        height: calc(100vh - 40px);
-    }
-
-    #input-area {
-        display: flex;
-        padding: 10px;
-        border-top: 1px solid #00ff00;
-        background: #000;
-    }
-
-    #prompt {
-        margin-right: 5px;
-        color: #00ff00;
+        margin-bottom: 10px;
     }
 
     #cmd {
-        flex: 1;
-        background: transparent;
-        border: none;
+        width: 100%;
+        background: #001900;
         color: #00ff00;
+        border: 1px solid #00ff00;
+        padding: 10px;
         font-family: inherit;
-        font-size: 16px;
-        outline: none;
-    }
-
-    ::selection {
-        background: #00ff00;
-        color: #000;
     }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
 
-<div id="terminal"></div>
+<h1>🎉 Mensagens para o Samuel 🎉</h1>
+<p>Clique abaixo para deixar uma mensagem para o aniversário dele!</p>
 
-<div id="input-area">
-    <span id="prompt">></span>
-    <input id="cmd" autocomplete="off" autofocus>
+<!-- BOTÃO PARA A PÁGINA DE ENVIAR -->
+<button onclick="window.location.href='enviar.html'">
+    Enviar mensagem
+</button>
+
+<!-- BOTÃO PARA ABRIR TERMINAL SECRETO -->
+<button onclick="toggleTerminal()">
+    Modo Terminal (secreto)
+</button>
+
+<!-- TERMINAL SECRETO -->
+<div id="terminal-box">
+    <h2>Terminal de Acesso</h2>
+    <div id="terminal"></div>
+    <input id="cmd" placeholder="Digite um comando e aperte Enter">
 </div>
 
 <script>
@@ -68,27 +91,24 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ------------------------ SISTEMA DO TERMINAL ------------------------ */
+/* ------------------------ FUNÇÕES DO TERMINAL ------------------------ */
+function toggleTerminal() {
+    const box = document.getElementById("terminal-box");
+    box.style.display = box.style.display === "block" ? "none" : "block";
+}
 
 const terminal = document.getElementById("terminal");
-const cmdInput = document.getElementById("cmd");
+const cmd = document.getElementById("cmd");
 
 function print(text) {
     terminal.innerHTML += text + "\n";
     terminal.scrollTop = terminal.scrollHeight;
 }
 
-print("Sistema iniciado.");
-print("Aguardando comando...");
+print("Terminal carregado.");
+print("Digite s4m4e4p4a4 para liberar as mensagens.");
 print("");
 
-/* ------------------------ CHECAR DATA REAL ------------------------ */
-function isBirthday() {
-    const now = new Date();
-    return now.getDate() === 22 && (now.getMonth() + 1) === 12;
-}
-
-/* ------------------------ PEGAR MENSAGENS ------------------------ */
 async function loadMessages() {
     print("Carregando mensagens...\n");
 
@@ -116,32 +136,21 @@ async function loadMessages() {
     print("=================\n");
 }
 
-/* ------------------------ DESBLOQUEAR ------------------------ */
-function unlock() {
-    print("Acesso autorizado.");
-    loadMessages();
-}
-
-/* ------------------------ COMANDOS ------------------------ */
-cmdInput.addEventListener("keydown", function(e) {
+cmd.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
-        const command = cmdInput.value.trim();
+        const command = cmd.value.trim();
+        cmd.value = "";
+
         print("> " + command);
-        cmdInput.value = "";
 
         if (command === "s4m4e4p4a4") {
-            unlock();
+            print("Acesso autorizado.");
+            loadMessages();
         } else {
             print("Comando desconhecido.");
         }
     }
 });
-
-/* ------------------------ DESBLOQUEIO AUTOMÁTICO ------------------------ */
-if (isBirthday()) {
-    print("Data validada: 22/12 — desbloqueando automaticamente...\n");
-    unlock();
-}
 </script>
 
 </body>
