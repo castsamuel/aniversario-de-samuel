@@ -84,7 +84,16 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+/* ===========================
+      ENVIAR SÓ UMA VEZ
+=========================== */
 async function sendMessage() {
+    if (localStorage.getItem("enviado") === "true") {
+        document.getElementById("msg-status").innerText =
+            "Você já enviou uma mensagem.";
+        return;
+    }
+
     const sender = document.getElementById("sender").value;
     const message = document.getElementById("message").value;
 
@@ -95,26 +104,35 @@ async function sendMessage() {
 
     const { error } = await supabase.from("mensagens").insert({
         sender: sender,
-        message: message
+        message: message,
     });
 
     if (!error) {
-        document.getElementById("msg-status").innerText = "Mensagem enviada!";
+        document.getElementById("msg-status").innerText =
+            "Mensagem enviada!";
         document.getElementById("sender").value = "";
         document.getElementById("message").value = "";
+
+        localStorage.setItem("enviado", "true");
     } else {
         document.getElementById("msg-status").innerText = "Erro ao enviar.";
     }
 }
 
-/* TERMINAL SECRETO */
+/* ===========================
+      TERMINAL SECRETO
+=========================== */
+
 let buffer = "";
+const terminal = document.getElementById("terminal");
+const terminalInput = document.getElementById("terminal-input");
+const terminalOutput = document.getElementById("terminal-output");
 
 document.addEventListener("keydown", (e) => {
     buffer += e.key;
 
     if (buffer.includes("s4m4e4p4a4")) {
-        document.getElementById("terminal").style.display = "block";
+        terminal.style.display = "block";
         logTerminal("TERMINAL ATIVADO");
         buffer = "";
     }
@@ -122,40 +140,62 @@ document.addEventListener("keydown", (e) => {
     if (buffer.length > 20) buffer = buffer.slice(-20);
 });
 
-document.getElementById("terminal-input").addEventListener("keydown", async (e) => {
+function logTerminal(text) {
+    terminalOutput.innerHTML += text + "<br>";
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+terminalInput.addEventListener("keydown", async (e) => {
     if (e.key === "Enter") {
-        const cmd = e.target.value;
-        e.target.value = "";
+        const cmd = terminalInput.value.trim();
+        terminalInput.value = "";
         await runCommand(cmd);
     }
 });
 
-function logTerminal(text) {
-    const box = document.getElementById("terminal-output");
-    box.innerHTML += text + "<br>";
-    box.scrollTop = box.scrollHeight;
-}
-
+/* ===========================
+       COMANDOS DO TERMINAL
+=========================== */
 async function runCommand(cmd) {
     if (cmd === "help") {
         logTerminal("Comandos: help, listar");
+        return;
     }
 
     if (cmd === "listar") {
-        const releaseTime = new Date("2024-12-22T00:00:00");
 
+        const releaseTime = new Date("2024-12-22T00:00:00");
         const now = new Date();
+
         if (now < releaseTime) {
-            logTerminal("⚠️ Você está vendo ANTES do tempo (modo teste).");
+            logTerminal("⚠️ Visualização antecipada (modo teste).");
         }
 
-        const { data } = await supabase.from("mensagens").select("*");
-        data.forEach(x => {
-            logTerminal(`<b>${x.sender}:</b> ${x.message}`);
+        const { data, error } = await supabase
+            .from("mensagens")
+            .select("*");
+
+        if (error) {
+            logTerminal("Erro ao carregar mensagens.");
+            return;
+        }
+
+        if (data.length === 0) {
+            logTerminal("Nenhuma mensagem ainda.");
+            return;
+        }
+
+        data.forEach((msg) => {
+            logTerminal(`<b>${msg.sender}:</b> ${msg.message}`);
         });
+
+        return;
     }
+
+    logTerminal("Comando não reconhecido.");
 }
 </script>
+
 
 </body>
 </html>
